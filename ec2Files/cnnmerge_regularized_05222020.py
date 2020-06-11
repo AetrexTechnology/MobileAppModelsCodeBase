@@ -10,12 +10,11 @@ import glob
 import numpy as np
 import pandas as pd
 import cv2
-# import seaborn as sns
+import seaborn as sns
 import random
 import matplotlib.pyplot as plt
 import json
-from tensorflow.keras.layers import Flatten, Input, Dense, BatchNormalization, Conv2D, MaxPool2D, GlobalMaxPool2D, \
-    GlobalAveragePooling2D, Dropout, Add, ReLU, Concatenate
+from tensorflow.keras.layers import Flatten, Input, Dense, BatchNormalization, Conv2D, MaxPool2D, GlobalMaxPool2D,     GlobalAveragePooling2D, Dropout, Add, ReLU, Concatenate
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications.vgg16 import VGG16
@@ -27,10 +26,12 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
+# In[2]:
 
-directory = '/home/ubuntu/Aetrex/home/sonu/sonu/Albie_Ml/regression_modeldata2'
 
-with open('../groundtruth2.json') as json_file:
+directory = '/home/ubuntu/Aetrex/home/sonu/sonu/Albie_Ml/regression_modeldata2/'
+
+with open('/home/ubuntu/Aetrex/groundtruth2.json') as json_file:
     gtdata = json.load(json_file)
 subdirs = os.listdir(directory)
 
@@ -40,9 +41,6 @@ finalyLeft = []
 finalyRight = []
 
 for i in range(len(subdirs)):
-    if subdirs[i][-4:] == 'json':
-        continue
-
     dir2pull = directory + '/' + subdirs[i] + '/'
     print(dir2pull)
 
@@ -51,13 +49,10 @@ for i in range(len(subdirs)):
 
     for file in glob.glob(dir2pull + '*.csv'):
         data2read = file.replace("\\", '/')
-        print(data2read)
+        # print(data2read)
         # print(data2read)
         singledata = pd.read_csv(data2read, header=None)
         singledata = np.array(singledata)
-
-        if singledata.shape[1] != 60:
-            continue
 
         dataarray = []
 
@@ -90,6 +85,7 @@ for i in range(len(subdirs)):
         else:
             image = cv2.imread(imgpath + '.jpg')
 
+        # print(image.shape)
         image = cv2.resize(image, (224, 224))
 
         finalX_img.append(image)
@@ -112,10 +108,7 @@ def shuffle_in_unison_four(a, b, c, d):
     return a[indeces], b[indeces], c[indeces], d[indeces]
 
 
-# In[28]:
-
-
-# In[11]:
+# In[3]:
 
 
 # def createinputForModel():
@@ -126,7 +119,7 @@ X_img, X_num, yL, yR = shuffle_in_unison_four(finalX_img, finalX_num, finalyLeft
 # In[19]:
 
 
-# In[12]:
+# In[4]:
 
 
 X_img_train = X_img[:120]
@@ -143,11 +136,51 @@ X_num_train = X_num
 yL_train = yL
 yR_train = yR
 
-X_num_train.shape
+# In[20]:
+
+
+# In[5]:
+
+
+yL_train.shape
+yL_test.shape
+
+
+# In[6]:
+
+
+#X_num_train.shape
+
+# In[21]:
+
+
+# X_num_train = X_num_train.reshape(X_num_train.shape[0], X_num_train.shape[1], 1)
+# # X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], 1)
+# X_num_test = X_num_test.reshape(X_num_test.shape[0], X_num_test.shape[1], 1)
+
+# In[22]:
+
+
+# In[7]:
+
 
 print(X_num_train.shape, X_num_test.shape)
 
-# In[16]:
+# In[23]:
+
+
+# In[21]:
+
+
+yL_train = yL_train.reshape(142,1)
+yL_test = yL_test.reshape(3,1)
+
+
+# In[22]:
+
+
+yR_train = yR_train.reshape(142,1)
+yR_test = yR_test.reshape(3,1)
 
 
 # In[23]:
@@ -156,13 +189,8 @@ print(X_num_train.shape, X_num_test.shape)
 root_logdir = os.path.join(os.curdir, "my_logs")
 
 
-# In[17]:
-
-
 # In[24]:
 
-
-# Setting tensorflow graphs
 
 def get_run_logdir():
     import time
@@ -175,14 +203,19 @@ run_logdir
 
 tensorboard_cb = keras.callbacks.TensorBoard(run_logdir)
 
-finalX_num = pd.DataFrame(finalX_num).drop(
-    [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
-     44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], axis=1).to_numpy()
+# In[ ]:
+
+
+# In[25]:
+
+
+# In[25]:
+
 
 input1 = Input(shape=(None, None, 3))
-input2 = Input(shape=(15))
+input2 = Input(shape=(60))
 
-# In[19]:
+# In[26]:
 
 
 # In[26]:
@@ -190,7 +223,7 @@ input2 = Input(shape=(15))
 
 input1.shape
 
-# In[20]:
+# In[27]:
 
 
 # In[27]:
@@ -198,10 +231,11 @@ input1.shape
 
 input2.shape
 
-# In[21]:
+# In[28]:
 
 
 # In[28]:
+
 
 base_model = VGG16(include_top=False, input_tensor=input1)
 x = base_model.output
@@ -247,9 +281,9 @@ for layer in base_model.layers:
 
 model.summary()
 
-checkPoint = keras.callbacks.ModelCheckpoint('weights{epoch:08d}.h5', save_weights_only=False, period=250)
+checkPoint = keras.callbacks.ModelCheckpoint('weights{epoch:08d}.h5', save_weights_only=False, period=5)
 
-# In[22]:
+# In[29]:
 
 
 # In[29]:
@@ -260,16 +294,27 @@ print(X_img_train.shape)
 # image_train = X_img_train / 255
 
 
-# In[23]:
+# In[30]:
 
 
-yL_train = np.expand_dims(yL_train, axis=1)
-yR_train = np.expand_dims(yR_train, axis=1)
+print(X_num_train.shape)
 
-yL_train = np.expand_dims(yL_train, axis=2)
-yR_train = np.expand_dims(yR_train, axis=2)
 
-print(yL_train.shape)
+# In[31]:
+
+
+yL_train.shape
+
+
+# In[32]:
+
+
+# yL_train = np.expand_dims(yL_train, axis=1)
+# yR_train = np.expand_dims(yR_train, axis=1)
+
+# yL_train = np.expand_dims(yL_train, axis=2)
+# yR_train = np.expand_dims(yR_train, axis=2)
+
 
 print(X_img_train.shape)
 print(X_num_train.shape)
@@ -277,10 +322,7 @@ print(yL_train.shape)
 print(yR_train.shape)
 
 
-# In[24]:
-
-
-# In[ ]:
+# In[33]:
 
 
 def root_mean_squared_error(y_true, y_pred):
@@ -293,11 +335,15 @@ model.compile(loss={'left_length': 'mse', 'right_length': 'mse'}, optimizer='ada
 
 # history = model.fit(X_train, y_train, batch_size = 50, validation_split = 0.2, epochs = 100, verbose = 0)
 
-model.fit([finalX_img, finalX_num], [finalyLeft, finalyRight], batch_size=2, validation_split=0.1, epochs=10000,
-          verbose=1,
+model.fit([X_img_train, X_num_train], [yL_train, yR_train], batch_size=2, validation_split=0.1, epochs=3, verbose=1,
           callbacks=[tensorboard_cb, checkPoint])
 # model.fit([X_CNN1, X_CNN2], y)
 
 print('-----done--------')
 
+
 # In[ ]:
+
+
+
+

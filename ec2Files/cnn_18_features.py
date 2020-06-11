@@ -26,11 +26,16 @@ from tensorflow import keras
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
+# In[ ]:
 
 
-directory = '/home/ubuntu/Aetrex/home/sonu/sonu/Albie_Ml/regression_modeldata2'
+import mlflow.tensorflow
 
-with open('../groundtruth2.json') as json_file:
+mlflow.tensorflow.autolog()
+
+directory = '../cnn_regression_data/200_improperdata'
+
+with open('../cnn_regression_data/200_improperdata/groundtruth1.json') as json_file:
     gtdata = json.load(json_file)
 subdirs = os.listdir(directory)
 
@@ -38,6 +43,35 @@ finalX_img = []
 finalX_num = []
 finalyLeft = []
 finalyRight = []
+
+# code for image cropping
+
+rgb_weights = [0.2989, 0.5870, 0.1140]
+
+
+def createMask(imagePath):
+    image = cv2.imread(imagePath)
+    boundaries = [
+        # ([100, 0, 0], [255, 70, 79]),
+        ([0, 0, 100], [40, 40, 255])
+    ]
+    for (lower, upper) in boundaries:
+        lower = np.array(lower, dtype="uint8")
+        upper = np.array(upper, dtype="uint8")
+
+        mask = cv2.inRange(image, lower, upper)
+        output = cv2.bitwise_and(image, image, mask=mask)
+        max_y = getPixelLocation(output) + 10
+        crop_image = image[max_y - image.shape[1]:max_y, :, :]
+        return crop_image
+
+
+def getPixelLocation(mask):
+    grayscale_image = np.dot(mask[..., :3], rgb_weights)
+    output2 = np.where(grayscale_image != 0)
+    max_y = output2[0].max()
+    return max_y
+
 
 for i in range(len(subdirs)):
     if subdirs[i][-4:] == 'json':
@@ -86,13 +120,13 @@ for i in range(len(subdirs)):
         imgpath = data2read.split('.cs')[0]
 
         if os.path.isfile(imgpath):
-            image = cv2.imread(imgpath)
+            image = createMask(imgpath)
         else:
-            image = cv2.imread(imgpath + '.jpg')
+            image = createMask(imgpath + '.jpg')
 
         image = cv2.resize(image, (224, 224))
 
-        finalX_img.append(image)
+        finalX_img.append(image / 255)
 
 # print(len(finalX))
 
@@ -112,21 +146,12 @@ def shuffle_in_unison_four(a, b, c, d):
     return a[indeces], b[indeces], c[indeces], d[indeces]
 
 
-# In[28]:
-
-
-# In[11]:
-
-
-# def createinputForModel():
+# In[ ]:
 
 
 X_img, X_num, yL, yR = shuffle_in_unison_four(finalX_img, finalX_num, finalyLeft, finalyRight)
 
-# In[19]:
-
-
-# In[12]:
+# In[ ]:
 
 
 X_img_train = X_img[:120]
@@ -147,19 +172,13 @@ X_num_train.shape
 
 print(X_num_train.shape, X_num_test.shape)
 
-# In[16]:
-
-
-# In[23]:
+# In[ ]:
 
 
 root_logdir = os.path.join(os.curdir, "my_logs")
 
 
-# In[17]:
-
-
-# In[24]:
+# In[ ]:
 
 
 # Setting tensorflow graphs
@@ -175,33 +194,31 @@ run_logdir
 
 tensorboard_cb = keras.callbacks.TensorBoard(run_logdir)
 
+# In[ ]:
+
+
 finalX_num = pd.DataFrame(finalX_num).drop(
-    [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
+    [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 35, 36, 37, 38, 39, 40, 41, 42, 43,
      44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], axis=1).to_numpy()
 
+# In[ ]:
+
+
 input1 = Input(shape=(None, None, 3))
-input2 = Input(shape=(15))
+input2 = Input(shape=(18))
 
-# In[19]:
-
-
-# In[26]:
+# In[ ]:
 
 
 input1.shape
 
-# In[20]:
-
-
-# In[27]:
+# In[ ]:
 
 
 input2.shape
 
-# In[21]:
+# In[ ]:
 
-
-# In[28]:
 
 base_model = VGG16(include_top=False, input_tensor=input1)
 x = base_model.output
@@ -247,12 +264,10 @@ for layer in base_model.layers:
 
 model.summary()
 
-checkPoint = keras.callbacks.ModelCheckpoint('weights{epoch:08d}.h5', save_weights_only=False, period=250)
+checkPoint = keras.callbacks.ModelCheckpoint('./weights_18_features/weights_382_{epoch:08d}.h5',
+                                             save_weights_only=False, period=2000)
 
-# In[22]:
-
-
-# In[29]:
+# In[ ]:
 
 
 print(X_img_train.shape)
@@ -260,7 +275,7 @@ print(X_img_train.shape)
 # image_train = X_img_train / 255
 
 
-# In[23]:
+# In[ ]:
 
 
 yL_train = np.expand_dims(yL_train, axis=1)
@@ -277,14 +292,44 @@ print(yL_train.shape)
 print(yR_train.shape)
 
 
-# In[24]:
-
-
 # In[ ]:
 
 
 def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
+
+
+# prototyping image generator that takes in 2 inputs
+# https://github.com/keras-team/keras/issues/3386
+
+def customDataAugGenerator(X_img, X_num, y_left, y_right, batch_size):
+    while True:
+
+        idx = np.random.permutation(X_img.shape[0])
+
+        datagen = ImageDataGenerator(
+            featurewise_center=False,  # set input mean to 0 over the dataset
+            samplewise_center=False,  # set each sample mean to 0
+            featurewise_std_normalization=False,  # divide inputs by std of the dataset
+            samplewise_std_normalization=False,  # divide each input by its std
+            zca_whitening=False,  # apply ZCA whitening
+            rotation_range=5,  # 180,  # randomly rotate images in the range (degrees, 0 to 180)
+            width_shift_range=0.1,  # 0.1,  # randomly shift images horizontally (fraction of total width)
+            height_shift_range=0.1,  # 0.1,  # randomly shift images vertically (fraction of total height)
+            horizontal_flip=False,  # randomly flip images
+            vertical_flip=False
+        )
+
+        batches = datagen.flow(X_img[idx], y_left[idx], batch_size=batch_size, shuffle=False)
+        idx0 = 0
+        for batch in batches:
+            idx1 = idx0 + batch[0].shape[0]
+
+            yield [batch[0], X_num[idx[idx0:idx1]]], [batch[1], y_right[idx[idx0:idx1]]]
+
+            idx0 = idx1
+            if idx1 >= X_img.shape[0]:
+                break
 
 
 model.compile(loss={'left_length': 'mse', 'right_length': 'mse'}, optimizer='adam',
@@ -293,10 +338,9 @@ model.compile(loss={'left_length': 'mse', 'right_length': 'mse'}, optimizer='ada
 
 # history = model.fit(X_train, y_train, batch_size = 50, validation_split = 0.2, epochs = 100, verbose = 0)
 
-model.fit([finalX_img, finalX_num], [finalyLeft, finalyRight], batch_size=2, validation_split=0.1, epochs=10000,
+model.fit([finalX_img, finalX_num], [finalyLeft, finalyRight], batch_size=2, validation_split=0.1, epochs=500000,
           verbose=1,
           callbacks=[tensorboard_cb, checkPoint])
-# model.fit([X_CNN1, X_CNN2], y)
 
 print('-----done--------')
 
