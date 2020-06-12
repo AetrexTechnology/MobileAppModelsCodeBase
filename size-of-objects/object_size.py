@@ -12,7 +12,7 @@ def midpoint(ptA, ptB):
 
 
 
-image = '/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/card2.png'
+image = '/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/coin.png'
 # load the image, convert it to grayscale, and blur it slightly
 image = cv2.imread(image)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -40,7 +40,7 @@ pixelsPerMetric = None
 # loop over the contours individually
 for c in cnts:
     # if the contour is not sufficiently large, ignore it
-    if not 150 <= cv2.contourArea(c) <= 200:
+    if not 20 <= cv2.contourArea(c) <= 150:
         continue
 
     # compute the rotated bounding box of the contour
