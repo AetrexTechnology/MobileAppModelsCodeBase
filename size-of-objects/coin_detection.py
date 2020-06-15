@@ -3,7 +3,7 @@ import argparse
 import cv2
 
 # load the image, clone it for output, and then convert it to grayscale
-image_file = '/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/coin.png'
+image_file = '/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/coin_crop1.png'
 image = cv2.imread(image_file)
 image = cv2.resize(image, (800, 800))
 output = image.copy()
@@ -12,7 +12,7 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 cv2.imshow('mask',gray)
 # detect circles in the image
-circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 4.0, 100, 100.0, 30.0, 20, 200)
+circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 4.0, 10, 100)
 print('Found some circles')
 # ensure at least some circles were found
 if circles is not None:
