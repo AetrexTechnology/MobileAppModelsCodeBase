@@ -16,17 +16,17 @@ def findCircles(image):
     # For color space
     # make array for final values
     HSVLOW = np.array([0, 0, 0])
-    HSVHIGH = np.array([255, 45, 255])
+    HSVHIGH = np.array([180, 255, 255])
 
     # apply the range on a mask
     mask = cv2.inRange(gray, HSVLOW, HSVHIGH)
-    maskedFrame = cv2.bitwise_and(image, image, mask=mask)
+    # maskedFrame = cv2.bitwise_and(image, image, mask=mask)
 
-    img_gray_blur = cv2.medianBlur(maskedFrame, 5)
-    img_gray_blur = cv2.cvtColor(img_gray_blur, cv2.COLOR_BGR2GRAY)
+    img_gray_blur = cv2.medianBlur(mask, 5)
+    # img_gray_blur = cv2.cvtColor(img_gray_blur, cv2.COLOR_BGR2GRAY)
 
-    circles = cv2.HoughCircles(img_gray_blur, cv2.HOUGH_GRADIENT, 1.5, 10,
-                               param1=10, param2=50, minRadius=20, maxRadius=70)
+    circles = cv2.HoughCircles(img_gray_blur, cv2.HOUGH_GRADIENT, 1.2, 20,
+                               param1=10, param2=20, minRadius=10, maxRadius=70)
     if circles is not None:
         circles = np.uint16(np.around(circles))
 
@@ -51,7 +51,7 @@ def findCircles(image):
 # It contains a boolean indicating if it was sucessful (ret)
 # It also contains the images collected from the webcam (frame)
 image_path = cv2.imread(
-    '/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/cropped/balcony_coin1_cropped.jpg')
+    '/size-of-objects/images/cropped/balcony_1.jpg')
 
 frame = image_path
 #    cv2.imshow('Our Live Sketcher', sketch(frame))

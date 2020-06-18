@@ -9,7 +9,7 @@ def findCircles(image):
     img_gray_blur = cv2.medianBlur(img_gray, 5)
 
     circles = cv2.HoughCircles(img_gray_blur, cv2.HOUGH_GRADIENT, 1.5, 10,
-                               param1=100, param2=100, minRadius=25, maxRadius=60)
+                               param1=100, param2=100, minRadius=25, maxRadius=70)
     if circles is not None:
         circles = np.uint16(np.around(circles))
 
@@ -28,7 +28,7 @@ def findCircles(image):
 # Initialize webcam, cap is the object provided by VideoCapture
 # It contains a boolean indicating if it was sucessful (ret)
 # It also contains the images collected from the webcam (frame)
-image_path = cv2.imread('/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/cropped/balcony_coin1_cropped.jpg')
+image_path = cv2.imread('/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/floor_coin1.jpg')
 
 frame = image_path
 #    cv2.imshow('Our Live Sketcher', sketch(frame))

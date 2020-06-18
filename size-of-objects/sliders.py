@@ -37,7 +37,7 @@ cv.setTrackbarPos(sl, barsWindow, 0)
 cv.setTrackbarPos(sh, barsWindow, 255)
 cv.setTrackbarPos(vl, barsWindow, 0)
 cv.setTrackbarPos(vh, barsWindow, 255)
-image_path = cv.imread('/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/cropped/balcony_coin1_cropped.jpg')
+image_path = cv.imread('/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/floor_coin1.jpg')
 while (True):
     frame = image_path
     frame = cv.resize(frame, (1400, 900))

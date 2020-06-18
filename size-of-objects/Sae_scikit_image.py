@@ -9,7 +9,7 @@ from skimage.util import img_as_ubyte
 
 
 # load the image, clone it for output, and then convert it to grayscale
-image_file = '/Users/vaneesh_k/PycharmProjects/Albie_ML/size-of-objects/images/cropped/balcony_coin1_cropped.jpg'
+image_file = '/size-of-objects/images/cropped/balcony_1.jpg'
 image = cv2.imread(image_file)
 # image = cv2.resize(image, (800, 800))
 output = image.copy()
