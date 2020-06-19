@@ -2,31 +2,27 @@ import numpy as np
 import cv2
 
 
+# this code hsv used to properly mask the coin
 def findCircles(image):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # For color space
-    # make array for final values
-
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(gray)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # generate edges using canny edge detector
-    # edges = canny(gray, sigma=3, low_threshold=10, high_threshold=50)
 
-    # For color space
-    # make array for final values
     HSVLOW = np.array([0, 0, 0])
-    HSVHIGH = np.array([180, 255, 255])
+    HSVHIGH = np.array([179, 31, 225])
 
     # apply the range on a mask
-    mask = cv2.inRange(gray, HSVLOW, HSVHIGH)
+    # mask = cv2.inRange(gray, HSVLOW, HSVHIGH)
     # maskedFrame = cv2.bitwise_and(image, image, mask=mask)
 
-    img_gray_blur = cv2.medianBlur(mask, 5)
+    img_gray_blur = cv2.medianBlur(gray, 5)
     # img_gray_blur = cv2.cvtColor(img_gray_blur, cv2.COLOR_BGR2GRAY)
-
+    # img_gray_blur  = cv2.Canny(img_gray_blur,threshold1=10, threshold2=50)
     circles = cv2.HoughCircles(img_gray_blur, cv2.HOUGH_GRADIENT, 1.2, 20,
-                               param1=10, param2=20, minRadius=10, maxRadius=70)
+                               param1=25, param2=50, minRadius=10, maxRadius=40)
+
     if circles is not None:
         circles = np.uint16(np.around(circles))
 
@@ -50,8 +46,7 @@ def findCircles(image):
 # Initialize webcam, cap is the object provided by VideoCapture
 # It contains a boolean indicating if it was sucessful (ret)
 # It also contains the images collected from the webcam (frame)
-image_path = cv2.imread(
-    '/size-of-objects/images/cropped/balcony_1.jpg')
+image_path = cv2.imread('../size-of-objects/images/cropped/kumar.jpg')
 
 frame = image_path
 #    cv2.imshow('Our Live Sketcher', sketch(frame))
